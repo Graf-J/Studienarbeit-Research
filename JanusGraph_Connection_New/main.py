@@ -9,13 +9,28 @@ import json
 
 
 # Create Test-Data-Set
+def create_test_data():
+    johannes_id = add_vertex('person', {'name': 'johannes', 'age': 23})
+    stefan_id = add_vertex('person', {'name': 'stefan', 'age': 54})
+    lioba_id = add_vertex('person', {'name': 'lioba', 'age': 50})
+    sophia_id = add_vertex('person', {'name': 'sophia', 'age': 20})
+    rosalie_id = add_vertex('person', {'name': 'rosalie', 'age': 13})
+
+    connect_vertices(stefan_id, lioba_id, 'mariage', {'strength': '0.98'})
+
 
 # Create Vertices with Properties
-def add_vertices():
+def add_vertex(label: str, properties: dict):
     with GraphDB('ws://localhost:8182/gremlin') as db:
-        v = db.g.addV('person').property(
-            'name', 'rosalie').property('age', '13').next()
-        print(v.id)
+        # Add Vertex
+        g = db.g.addV(label)
+        # Fill Properties
+        for key, value in properties.items():
+            g = g.property(key, str(value))
+        # Execute Query
+        v = g.next()
+
+        return v.id
 
 
 # Query Vertixes with Projcet Queries
@@ -46,17 +61,22 @@ def query_vertices_advanced():
 
 
 # Connect Vertices with Edge with Label
-def connect_vertices(from_vertex_id, to_vertex_id):
+def connect_vertices(from_vertex_id: int, to_vertex_id: int, label: str, properties: dict):
     with GraphDB('ws://localhost:8182/gremlin') as db:
-        source_vertex = db.g.V(from_vertex_id).next()
-        target_vertex = db.g.V(to_vertex_id).next()
-        count = db.g.V(source_vertex).outE().hasLabel(
-            'mariage').where(__.inV().has_id(target_vertex.id)).count().next()
+        # Count Edges with Label between these two Vertices
+        count = db.g.V(from_vertex_id).outE().hasLabel(label) \
+            .where(__.inV().has_id(to_vertex_id)).count().next()
 
         # Only add edge, if not already exists
         if count == 0:
-            db.g.V(from_vertex_id).as_('source').V(to_vertex_id).as_('target') \
-                .addE('mariage').from_('source').to('target').property('strength', '0.98').iterate()
+            g = db.g.V(from_vertex_id).as_('source') \
+                .V(to_vertex_id).as_('target') \
+                .addE(label).from_('source').to('target')
+
+            for key, value in properties.items():
+                g = g.property(key, str(value))
+
+            g.iterate()
         else:
             print('Edge already exists!')
 
@@ -96,9 +116,9 @@ def update_vertex():
 
 
 # Delete Vertex
-def delete_vertex():
+def delete_vertex(vertex_id):
     with GraphDB('ws://localhost:8182/gremlin') as db:
-        db.g.V().has('name', 'rosalie').drop().iterate()
+        db.g.V(vertex_id).drop().iterate()
 
 
 # Query Complex Conditions
@@ -163,7 +183,8 @@ def update_edge(from_vertex_id, to_vertex_id):
 
 
 def main():
-    query_vertices()
+    create_test_data()
+    # query_vertices()
     # query_vertices_advanced()
     # connect_vertices(20520, 12392)
     # query_vertices_nested()
