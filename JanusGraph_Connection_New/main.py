@@ -163,7 +163,7 @@ def update_edge(from_vertex_id, to_vertex_id):
 
 
 def main():
-    # query_vertices()
+    query_vertices()
     # query_vertices_advanced()
     # connect_vertices(20520, 12392)
     # query_vertices_nested()
@@ -172,8 +172,8 @@ def main():
     # query_conditions()
     # disconnect_vertices(20520, 8296)
     # query_with_edges()
-    update_edge(20520, 8296)
-    query_with_edges_with_order()
+    # update_edge(20520, 8296)
+    # query_with_edges_with_order()
 
 
 if __name__ == '__main__':

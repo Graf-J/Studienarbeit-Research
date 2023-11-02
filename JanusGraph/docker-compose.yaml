@@ -1,0 +1,7 @@
+version: '3'
+services:
+  db:
+    image: janusgraph/janusgraph:1.0.1-20231027-015606.2ca33aa
+    ports:
+      - "8182:8182"
+    command: ["janusgraph", "server", "start"]
