@@ -10,7 +10,7 @@ query = QueryType()
 
 @query.field('personList')
 def resolve_persons(_, info, **arguments):
-    print(json.dumps(arguments['or'], indent=4))
+    print(json.dumps(arguments, indent=4))
     return [{ 'id': 3, 'name': 'Marcus' }]
 
 schema = make_executable_schema(type_defs, query)

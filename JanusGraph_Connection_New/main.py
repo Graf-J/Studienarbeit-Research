@@ -57,6 +57,8 @@ def connect_vertices(from_vertex_id, to_vertex_id):
         if count == 0:
             db.g.V(from_vertex_id).as_('source').V(to_vertex_id).as_('target') \
                 .addE('mariage').from_('source').to('target').property('strength', '0.98').iterate()
+        else:
+            print('Edge already exists!')
 
 
 # Disconnect Vertices with Edge with Label
@@ -71,7 +73,7 @@ def disconnect_vertices(from_vertex_id, to_vertex_id):
 # Nested Query (out, in, coalesce)
 def query_vertices_nested():
     with GraphDB('ws://localhost:8182/gremlin') as db:
-        res = db.g.V().has('name', 'stefan').project('id', 'name', 'marriage') \
+        res = db.g.V().has('name', 'stefan').project('id', 'name', 'mariage') \
             .by(__.id_()) \
             .by(__.values('name')) \
             .by(
@@ -116,18 +118,37 @@ def query_conditions():
 
 def query_with_edges():
     with GraphDB('ws://localhost:8182/gremlin') as db:
-        res = db.g.V().has('name', 'stefan').project('id', 'name', 'marriage') \
+        res = db.g.V().has('name', 'stefan').project('id', 'name', 'mariage') \
             .by(__.id_()) \
             .by(__.values('name')) \
             .by(
-                __.outE('mariage').has('strength', P.gt(
-                    0.9)).project('strength', 'person')
-            .by(__.values('strength'))
-            .by(
-                __.inV().project('name', 'age')
+                __.outE('mariage').has('strength', P.gt(0.9)).where(
+                    __.inV().has('name', 'lioba')).project('strength', 'person')
+                .by(__.values('strength'))
+                .by(
+                    __.inV().project('name', 'age')
                     .by(__.values('name'))
-                    .by(__.values('age'))
-            ).fold()
+                        .by(__.values('age'))
+                ).fold()
+        ).next()
+
+        print(json.dumps(res, indent=4))
+
+
+def query_with_edges_with_order():
+    with GraphDB('ws://localhost:8182/gremlin') as db:
+        res = db.g.V().has('name', 'stefan').project('id', 'name', 'mariage') \
+            .by(__.id_()) \
+            .by(__.values('name')) \
+            .by(
+                __.outE('mariage').has('strength', P.gt("0.7")).where(
+                    __.inV().has('name', P.neq('Fish'))).order().by('strength', Order.asc).by(__.inV().values('age'), Order.desc).project('strength', 'person')
+                .by(__.values('strength'))
+                .by(
+                    __.inV().project('name', 'age')
+                    .by(__.values('name'))
+                        .by(__.values('age'))
+                ).fold()
         ).next()
 
         print(json.dumps(res, indent=4))
@@ -138,20 +159,21 @@ def update_edge(from_vertex_id, to_vertex_id):
         source_vertex = db.g.V(from_vertex_id).next()
         target_vertex = db.g.V(to_vertex_id).next()
         db.g.V(source_vertex).outE().hasLabel(
-            'mariage').where(__.inV().has_id(target_vertex.id)).property('strength', '0.98').iterate()
+            'mariage').where(__.inV().has_id(target_vertex.id)).property('strength', '0.8').iterate()
 
 
 def main():
     # query_vertices()
     # query_vertices_advanced()
-    # connect_vertices(20520, 8296)
+    # connect_vertices(20520, 12392)
     # query_vertices_nested()
     # update_vertex()
     # delete_vertex()
     # query_conditions()
     # disconnect_vertices(20520, 8296)
-    query_with_edges()
-    # update_edge(20520, 8296)
+    # query_with_edges()
+    update_edge(20520, 8296)
+    query_with_edges_with_order()
 
 
 if __name__ == '__main__':
