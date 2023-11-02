@@ -45,7 +45,14 @@ Person = """
         label: String!
         name: String!
         age: Int
-        friend(
+        friendOut(
+            vertexLogic: PersonVertexLogic
+            edgeLogic: PersonToPersonFriendEdgeLogic
+            vertexOrderBy: [PersonVertexOrderBy!]
+            edgeOrderBy: [PersonToPersonFriendEdgeOrderBy!]
+            pagination: Pagination
+        ): [PersonToPersonFriendEdge!]!
+        friendIn(
             vertexLogic: PersonVertexLogic
             edgeLogic: PersonToPersonFriendEdgeLogic
             vertexOrderBy: [PersonVertexOrderBy!]
@@ -360,3 +367,9 @@ type_defs = [
 #   - [DISCUSS]: Statements, or, and are linked with the and_ internally:
 #       * Advantage: Better readability with where and nice for short logic expressions
 #       * Disadvantage: Can maybe be a little bit misleading
+#   - weird edge names in type schema, to avoid edge label duplicate issues (field has to be unique in schema, but there may be more edges with the same name)
+#       * <label>: if there are no name conflicts for vertex with in and outgoing edges (name as simple as possible for readability)
+#       * <label>In | <label>|Out: if there is a name conflict for in and outgoing edges, but <label> only exists once for in and out edges
+#       * <fromVertex><toVertex><label>: if there are multiple edges with same label, but is it clear if it's an incoming or outgoing edge
+#       * <fromVertex><toVertex><label>In | <fromVertex><toVertex><label>Out: if there multiple edges with same label and in / out is not clear
+#       -> constraint: between two vertex-types there can only be one edge-type with the same label
