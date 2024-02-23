@@ -66,7 +66,7 @@ Person = """
         ): [PersonToHobbyPerformEdge!]!
     }
 """
-# (no edge-logic in perform, since perform has no attributes)
+# (no edge-logic and edge-orderby in perform, since perform has no attributes)
 
 AddPersonInput = """
     input AddPersonInput {

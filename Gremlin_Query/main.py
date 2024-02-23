@@ -162,12 +162,14 @@ def query_with_edges_with_order():
             .by(__.values('name')) \
             .by(
                 __.outE('mariage').has('strength', P.gt("0.7")).where(
-                    __.inV().has('name', P.neq('Fish'))).order().by('strength', Order.asc).by(__.inV().values('age'), Order.desc).project('strength', 'person')
+                    __.inV().hasLabel('person').has('name', P.neq('Fish'))).order().by('strength', Order.asc).by(__.inV().values('age'), Order.desc).project('label', 'strength', 'person')
+                .by(__.label())
                 .by(__.values('strength'))
                 .by(
-                    __.inV().project('name', 'age')
+                    __.inV().project('label', 'name', 'age')
+                    .by(__.label())
                     .by(__.values('name'))
-                        .by(__.values('age'))
+                    .by(__.values('age'))
                 ).fold()
         ).next()
 
@@ -183,7 +185,7 @@ def update_edge(from_vertex_id, to_vertex_id):
 
 
 def main():
-    create_test_data()
+    # create_test_data()
     # query_vertices()
     # query_vertices_advanced()
     # connect_vertices(20520, 12392)
@@ -194,7 +196,7 @@ def main():
     # disconnect_vertices(20520, 8296)
     # query_with_edges()
     # update_edge(20520, 8296)
-    # query_with_edges_with_order()
+    query_with_edges_with_order()
 
 
 if __name__ == '__main__':
